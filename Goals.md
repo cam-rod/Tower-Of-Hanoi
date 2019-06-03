@@ -49,3 +49,5 @@
 
 - Open an interface saying "You've won!"
 - Give an option to restart the program (from the number of discs screen)
+
+For PyGame intro, see [ThePythonGameBook](http://thepythongamebook.com/en:pygame:start) with [this site to assist](https://dr0id.bitbucket.io/legacy/pygame_tutorial00.html).
