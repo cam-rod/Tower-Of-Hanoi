@@ -6,7 +6,7 @@ pygame.display.set_caption('Hello there!')
 screen = pygame.display.set_mode((640,480))
 
 # Background
-# .subsurface() creates permenantly identical child Surface (.get_offset() for location in parent)
+# .subsurface() creates permanently identical child Surface (.get_offset() for location in parent)
 # Use .get_at((x,y)) for colour of indiv. pixel
 # Also available: .get_size/width/height()
 background = pygame.Surface(screen.get_size())
@@ -19,13 +19,17 @@ time.sleep(0.5)
 pygame.display.update()
 
 # Create a circle
+# Rectangle when mentioned are always pygame.Rect(x,y,width,height)
 ball = pygame.Surface((50,50))
 ball.fill((128,32,128))
 ball.set_colorkey((128,32,128)) # All pixels this colour become transparent; also available is .set_alpha(0-255) for full image transparency
 
+# {line width always optional} **pygame.draw** includes .rect(Surface, colour, Rect), .polygon(~, ~~, pointlist), .ellispe(~, ~~, Rect) {ovals!},
+# .arc(~, ~~, Rect, init_angle, final_angle) {in radians from right}, .line(~, ~~, start_xy, end_xy), .lines(~, ~~, closed_bool, pointlist),
+# .aalines (~, ~~, ~~~, ~~~~, blend_shades_bool) {anti-aliased lines}
 pygame.draw.circle(ball, (255,0,0), (25,25), 25) # surface, colour, pos (from top-left), radius, linewidth (don't include for solid fill)
 ball = ball.convert()
-screen.blit(ball, (320,240))
+screen.blit(ball, (320-25,240-25))
 pygame.time.wait(300)
 pygame.display.update()
 
@@ -53,10 +57,49 @@ while running:
         
         if event.type == pygame.QUIT: # X button
             running = False
-            
+
+        # Music can be added with pygame.mixer.music.load() and then commandds are expected incliding .unpause(), .fadeout(time)
+        # .set_volume(0.0-1.0), .get_busy() --> bool, .set_pos() {.ogg use |seconds|, .mp3 is relative time to current pos}, .queue,
+        # .set_endevent() {sends event}, .rewind()
+        # Sound {}.ogg/.wav} is similar, but created with pygame.mixer.Sound(file) and lacks timeset and busy controls, but includes
+        # .get_length() and .get_num_channels() {# of repeats}
         elif event.type == pygame.KEYDOWN: # Keypress
             if event.key == pygame.K_ESCAPE: # Key type constant returns an integer assigned to the key
                 running = False
+            elif event.key == pygame.K_i:
+                    # Load a picture
+                    # Import os and use os.path.join("folder", "file") for platform independent subfolder selection
+                    # You can use subsurfaces to grab indiv. frames as segments of spritesheets
+                    cutie = pygame.image.load('test_pic.png')
+                    cutie = cutie.convert_alpha() # Preserves per-pixel alpha levels
+                    screen.blit(cutie, (320-8, 240-8))
+                    pygame.display.update()
+                    pygame.time.wait(1300)
+
+                    # **pygame.transform includes .flip(Surface,xbool,ybool), .scale(~, (width,height), dest) {or use returned value}
+                    # .rotate(Surface, CCW degrees), .rotozoom(~, CCW degrees, int multiplier), .scale2x(~, dest) {best for solid colours}
+                    # .smoothscale(~, (width,height), dest) .chop(~, Rect), .average_surfaces(~, dest) {creates surface of
+                    # avg colours from all surfaces}, .average_color(~, optional Rect)
+                    cutie = pygame.transform.flip(cutie, True, False) # Flip x/y bool
+                    screen.blit(cutie, (320-8, 240-8))
+                    pygame.display.update()
+                    pygame.time.wait(400)
+
+                    screen.blit(ball, (320-25, 240-25))
+                    pygame.display.update()
+            elif event.key == pygame.K_RETURN:
+                for q in range(5):
+                    # Move ball to corner, then back
+                    # Movement can be tied to frames (see .tick()) or to delta-time
+                    screen.blit(background, (0,0)) # You can also clean the screen by calculating the dirty area as a subsurface
+                    screen.blit(ball, (0,0))
+                    pygame.display.update()
+                    pygame.time.wait(500)
+
+                    screen.blit(background, (0,0))
+                    screen.blit(ball, (320-25,240-25))
+                    pygame.display.update()
+                    pygame.time.wait(500)
             else:
                 j = j+chr(event.key)
                 i+=1
