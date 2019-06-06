@@ -87,6 +87,27 @@ while running:
 
                     screen.blit(ball, (320-25, 240-25))
                     pygame.display.update()
+            elif event.key == pygame.K_t:
+                # Loads text
+                # To start, assign pygame.font.SysFont(nameOfASystemFont or None, heightOfFontInVerticalPixels, optionalBoldbool, optionalItalicsbool) 
+                # or pygame.font.Font(fontFileLocation, height) {use pygame.font.match_font(fontname) to get it and .getfonts() for a list of all options}
+                # Then: fontvar.render(text[]2 byte unicode allowed], antialiasbool, textcolour, optionalBGcolour)
+                # Also available is .size(text) {can be used before redndering to get req. size box}, .set_underline/bold/italic(bool) or .get_~/~~/~~~,
+                # .get_linesize() {height of text, recommended space between lines}
+                pygame.font.init()
+                text = pygame.font.SysFont(None, 20, True)
+                yeet = text.render('You called?', True, (0,255,0))
+                yeet = yeet.convert_alpha()
+                
+                screen.blit(yeet, (320-45,240+32))
+                pygame.display.update()
+                pygame.time.wait(2000)
+                
+                # Consider packaging basic commands like this into a function that can be modified with params
+                screen.blit(background, (0,0))
+                screen.blit(ball, (320-25,240-25))
+                pygame.display.update()
+                
             elif event.key == pygame.K_RETURN:
                 for q in range(5):
                     # Move ball to corner, then back
@@ -100,6 +121,10 @@ while running:
                     screen.blit(ball, (320-25,240-25))
                     pygame.display.update()
                     pygame.time.wait(500)
+            
+            elif event.key == pygame.K_s:
+                # Sprites, check pygame.examples.testsprite.__file__
+                pass
             else:
                 j = j+chr(event.key)
                 i+=1
