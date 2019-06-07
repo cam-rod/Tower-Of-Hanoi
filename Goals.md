@@ -5,7 +5,7 @@
 - Number of towers and number of discs are given
 - Largest to smallest discs stacked on one tower
 - Can only move one disc at a time (ex. 4,3,2,1 to 4,3,2)
-- Larger discs must alwawys be below smaller discs (ex. 5,2,1)
+- Larger discs must always be below smaller discs (ex. 5,2,1)
 - *SUCCESS: All discs on* ***last*** *tower*
 
 ### Program Requirements

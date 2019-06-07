@@ -24,7 +24,7 @@ ball = pygame.Surface((50,50))
 ball.fill((128,32,128))
 ball.set_colorkey((128,32,128)) # All pixels this colour become transparent; also available is .set_alpha(0-255) for full image transparency
 
-# {line width always optional} **pygame.draw** includes .rect(Surface, colour, Rect), .polygon(~, ~~, pointlist), .ellispe(~, ~~, Rect) {ovals!},
+# {line width always optional} **pygame.draw** includes .rect(Surface, colour, Rect), .polygon(~, ~~, pointlist),ellipse(~, ~~, Rect) {ovals!},
 # .arc(~, ~~, Rect, init_angle, final_angle) {in radians from right}, .line(~, ~~, start_xy, end_xy), .lines(~, ~~, closed_bool, pointlist),
 # .aalines (~, ~~, ~~~, ~~~~, blend_shades_bool) {anti-aliased lines}
 pygame.draw.circle(ball, (255,0,0), (25,25), 25) # surface, colour, pos (from top-left), radius, linewidth (don't include for solid fill)
@@ -92,7 +92,7 @@ while running:
                 # To start, assign pygame.font.SysFont(nameOfASystemFont or None, heightOfFontInVerticalPixels, optionalBoldbool, optionalItalicsbool) 
                 # or pygame.font.Font(fontFileLocation, height) {use pygame.font.match_font(fontname) to get it and .getfonts() for a list of all options}
                 # Then: fontvar.render(text[]2 byte unicode allowed], antialiasbool, textcolour, optionalBGcolour)
-                # Also available is .size(text) {can be used before redndering to get req. size box}, .set_underline/bold/italic(bool) or .get_~/~~/~~~,
+                # Also available is .size(text) {can be used before rendering to get req. size box}, .set_underline/bold/italic(bool) or .get_~/~~/~~~,
                 # .get_linesize() {height of text, recommended space between lines}
                 pygame.font.init()
                 text = pygame.font.SysFont(None, 20, True)
@@ -123,7 +123,27 @@ while running:
                     pygame.time.wait(500)
             
             elif event.key == pygame.K_s:
-                # Sprites, check pygame.examples.testsprite.__file__
+                # Sprites are created as a class for easier management and collision calculations too
+                # Create with classname(pygame.sprite.Sprite): and add global vars such as image = pygame.image.load('')
+                # In __init__(self), include pygame.sprite.Sprite.__init__(self, self.groups), then continue as usual
+                # Create groups {to manage lots of sprites} with groupvar = pygame.sprite.Group(optionallistofsprites)
+                # **pygame.sprite.Sprite** object includes .update(), .add()/.remove() {for groups}, .groups() {list of groups it's in}
+                # .kill() {remove all}, and .alive() {in any groups?}, .image(), .rect()
+                # **pygame.sprite.Group** object includes .copy(), .add()/.remove() .has() {reverse .alive()}, .empty() {the group}
+                # .draw (Surface) {blit all, still needs display.update unless hijacked}, .clear( _screen, background) {cover all},
+                # .update() {calls update function in each Sprite object}
+                # __Collisions__ include .spritecollide(sprite, aGroup, killCollidingGroupSpritesbool, collideMethod) --> a list
+                # and .groupcollide(group1, group2, dokill1, dokill2, collideMethod) --> a dictionary of group1: group2;
+                #  -->>> the collideMethods: .collide_rect/_circle(sprite1, sprite2), .collide[_rect/_circle]_ratio(multiplier),
+                # .collide_mask(sprite1, sprite2) {per pixel, runs faster if assigned earlier as sprite.mash = pygame.mask.from_surface(sprite.image)}
+                # Finally, .spritecollideany(sprite, group, collideMethod) {returns first collision found or None}
+                
+                # Example collide methods
+                # .groupcollide(group1, group2, False, True, collide_circle_ratio(1.3)) {kill in group2, not group1}
+                # .spritecollide(sprite1, group1, True, collide_rect) {uses radius or creates one to completely enclose Rect}
+                # .collide_circle_ratio(1.3)(sprite1, sprite2)
+                # .collide_rect(sprite1, sprite2)
+                # .spritecollideany(sprite1, group1, collide_circle)
                 pass
             else:
                 j = j+chr(event.key)
@@ -134,3 +154,21 @@ while running:
             i=0
             j=''
         
+# GUI: well that should be easy for you to make now, shouldn't it (or just use tkinter)?
+
+# Event data to be called
+# QUIT             none
+# ACTIVEEVENT      gain, state
+# KEYDOWN          unicode, key, mod
+# KEYUP            key, mod
+# MOUSEMOTION      pos, rel, buttons
+# MOUSEBUTTONUP    pos, button
+# MOUSEBUTTONDOWN  pos, button
+# VIDEORESIZE      size, w, h
+# VIDEOEXPOSE      none
+# USEREVENT        code
+
+# **pygame.mouse** {separate from pygame.event)includes .get_pressed() --> (leftbool, scrollbool, rightbool), .get_pos --> (x,y),
+# .get_rel() --> (x,y) {delta-movement since last called}, .set_pos([x,y]) {nice.}, .set_visible(bool) {nice.},
+# .get_focused() {easy to tell if window is selected
+# and this fun way to make a custom cursor https://www.pygame.org/docs/ref/mouse.html#comment_pygame_mouse_set_cursor
