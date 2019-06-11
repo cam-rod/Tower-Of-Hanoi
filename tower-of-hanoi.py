@@ -13,6 +13,8 @@ background
 title_font
 subtitle_font
 text_font
+button_font
+towers: list: the list of discs currently on towers
 active
 event
 x
@@ -22,9 +24,10 @@ title
 subtitle
 ins_list
 length
-button_font
 button_text
 number_button
+num
+tower_block
 """
 
 # This function loads in the title and subtitle as needed.
@@ -50,7 +53,10 @@ def load_title(title_text, *subtitle_text):
             subtitle.convert_alpha()
             screen.blit(subtitle, ((800 - subtitle_font.size(subtitle_text[0])[0]) / 2,10))
         except IndexError:
-            pass        
+            pass
+        # End try/except
+    # End if title_text      
+# End load_title
 
 # This function provides the instructions of the game to the user.
 # start: bool: Determines whether the game is starting to call next method
@@ -91,6 +97,7 @@ def instructions(start):
 
     pygame.display.update()
 
+    # Scan for button click
     active = True
     while active:
         for event in pygame.event.get():
@@ -110,7 +117,8 @@ def instructions(start):
         game_setup()
     else:
         pass # NOTE: This will return to game
-     # End if start
+    # End if start
+# End load_instructions
 
 # This function warns the user if they are about to quit the game.
 def quit_warning():
@@ -128,26 +136,78 @@ def game_setup():
     screen.blit(text, (232,172))
     
     # Generate buttons for number selection with text
-    # NOTE: gaps of 11px
     number_button = pygame.Surface((122,189))
     number_button.fill((0,0,255))
     
     for i in range(4):
         for j in range(2):
+            num = str(3 + i + (j*4))
             screen.blit(number_button, (134+(i*145), 200+(j*200)))
+
+            button_text = button_font.render(num, True, (255,255,255))
+            button_text = button_text.convert_alpha()
+            screen.blit(button_text, (195+(i*145)-(button_font.size(num)[0]/2), 285+(j*200)))
         # End for j
     # End for i
     
-    # Generate numbers within buttons
-    for i in range(3,11):
-        pass
-        #button_text = button_font.render(str(i), True, (255,255,255))
-        #button_text = button_text.convert_alpha()
-        #screen.blit(button)
-     # NOTE: combine this function with the one above for sanity's sake
-    
     pygame.display.update()
-    pygame.time.wait(3000)
+
+    # Scan for number selection
+    active = True
+    while active:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: # Quit button
+                active = False # NOTE: remove when quit function is complete
+                quit_warning()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                for i in range(4):
+                    if active is not True:
+                        break
+                    # End if active
+                    for j in range(2):
+                        if button_clicked(event, (134+(i*145),255+(i*145)), (200+(j*200),388+(j*200))):
+                            num = 3 + i + (j*4) # Return the number selected
+                            active = False
+                        # End if button_clicked
+                    # End for i
+                # End for i
+            # End if event.type
+        # End got event
+    # End while active
+
+    generate_game(num)
+# End game_setup
+
+# This function updates the interface based on the location of the discs
+# mouse_clicked: bool: declares whether the mouse is currently holding a number
+# mouse_data: list: optional; provides disc held by mouse and mouse position
+def screen_update(mouse_clicked, *mouse_data):
+    # Generate the background, towers, and instructions button
+    screen.blit(background, (0,0))
+
+    tower_block = pygame.Surface((40, 440))
+    tower_block.fill((27,13,3))
+    tower_block = tower_block.convert()
+    for i in range(3):
+        screen.blit(tower_block, (160+(i*220), 160))
+    # End if i
+
+    button_text = button_font.render('Instructions', True, (255,255,255))
+    button_text = button_text.convert_alpha()
+    screen.blit(button, (710,10))
+    screen.blit(button_text, (713,31))
+
+    # Generate the discs currently located on the towers
+
+# This function initializes the game.
+# num: int: the number of discs in the game
+def generate_game(num):
+    # Generate initial tower values
+    global towers
+    towers[0] = [i for i in range(num, 0, -1)]
+    
+    # Generate the interface
+    screen_update(False)
 
 if __name__ == '__main__': # Program was started directly and not called
     # Initialize pygame
@@ -167,12 +227,13 @@ if __name__ == '__main__': # Program was started directly and not called
     # Lambda functions
     button_clicked = lambda event, x, y: True if event.button == 1 and event.pos[0] in range(x[0],x[1]) and \
                                          event.pos[1] in range(y[0],y[1]) else False # Returns True if left click in defined range
-    
     # Various fonts
     title_font = pygame.font.SysFont('timesnewroman', 80, True)
     subtitle_font = pygame.font.SysFont('timesnewroman', 40, True, True)
     text_font = pygame.font.SysFont('timesnewroman', 15)
     button_font = pygame.font.SysFont('arial', 15, True)
-    
+    # Tower array
+    towers = [[], [], []]
+
     # Load instructions in game start mode
     instructions(True)
