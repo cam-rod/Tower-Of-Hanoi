@@ -28,6 +28,7 @@ button_text
 number_button
 num
 tower_block
+disc
 """
 
 # This function loads in the title and subtitle as needed.
@@ -141,12 +142,11 @@ def game_setup():
     
     for i in range(4):
         for j in range(2):
-            num = str(3 + i + (j*4))
             screen.blit(number_button, (134+(i*145), 200+(j*200)))
 
-            button_text = button_font.render(num, True, (255,255,255))
+            button_text = button_font.render(str(3+i+(j*4)), True, (255,255,255))
             button_text = button_text.convert_alpha()
-            screen.blit(button_text, (195+(i*145)-(button_font.size(num)[0]/2), 285+(j*200)))
+            screen.blit(button_text, (195+(i*145)-(button_text.get_size()[0]/2), 285+(j*200))) # Centered on each button
         # End for j
     # End for i
     
@@ -180,7 +180,7 @@ def game_setup():
 
 # This function updates the interface based on the location of the discs
 # mouse_clicked: bool: declares whether the mouse is currently holding a number
-# mouse_data: list: optional; provides disc held by mouse and mouse position
+# mouse_data: list: optional; provides disc held by mouse as int and mouse position as tuple
 def screen_update(mouse_clicked, *mouse_data):
     # Generate the background, towers, and instructions button
     screen.blit(background, (0,0))
@@ -189,7 +189,7 @@ def screen_update(mouse_clicked, *mouse_data):
     tower_block.fill((27,13,3))
     tower_block = tower_block.convert()
     for i in range(3):
-        screen.blit(tower_block, (160+(i*220), 160))
+        screen.blit(tower_block, (120+(i*260), 160))
     # End if i
 
     button_text = button_font.render('Instructions', True, (255,255,255))
@@ -198,6 +198,27 @@ def screen_update(mouse_clicked, *mouse_data):
     screen.blit(button_text, (713,31))
 
     # Generate the discs currently located on the towers
+    # NOTE: height of 25px with 10px gaps and width of 40+(10*num)px
+    for i in range(3):
+        for j in range(len(towers[i])):
+            disc = pygame.Surface((40+(towers[i][j]*20),25))
+            disc.fill((0,100,0))
+            disc = disc.convert()
+            screen.blit(disc, (120+(i*260)-(towers[i][j]*10), 600-(35*(j+1)))) # Centered on tower
+        # End for j
+    # End for i
+
+    # Generate disc currently held by mouse, if any
+    if mouse_clicked:
+        disc = pygame.Surface((40+(mouse_data[0]*20),25))
+        disc.fill((0,100,0))
+        disc = disc.convert()
+        screen.blit(disc, (mouse_data[1][0]-(disc.get_size()[0]/2), mouse_data[1][1]-(disc.get_size()[1]/2)))
+    # End if mouse clicked
+
+    pygame.display.update()
+# End screen_update
+
 
 # This function initializes the game.
 # num: int: the number of discs in the game
