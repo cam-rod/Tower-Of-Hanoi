@@ -86,7 +86,7 @@ def instructions(start):
     ins_list.append(text_font.render('', True, (0,0,0)))
     ins_list.append(text_font.render('To move discs, click and drag them from one tower to another. The disc will', True, (0,0,0)))
     ins_list.append(text_font.render('jump back to the original tower if it cannot be moved there. You can move', True, (0,0,0)))
-    ins_list.append(text_font.render('discs as many time as you want, until the whole stack has been moved.', True, (0,0,0)))
+    ins_list.append(text_font.render('discs as many times as you want, until the whole stack has been moved.', True, (0,0,0)))
     ins_list.append(text_font.render('', True, (0,0,0)))
     ins_list.append(text_font.render('Good luck!', True, (0,0,0)))
 
