@@ -8,33 +8,34 @@ import pygame
 """
 Data Dictionary
 
-screen
-background
-title_font
-subtitle_font
-text_font
-button_font
+screen: pygame.Surface: the window container for the game
+background: pygame.Surface: the background colour for the game, a light beige
+title_font: pygame.font.Font: the template font for the main title
+subtitle_font: pygame.font.Font: the template font for subtitles
+text_font: pygame.font.Font: the template font for body text
+button_font: pygame.font.Font: the template font for buttons
 towers: list: the array of discs currently on 3 towers, used as stacks
 selected: list: contains the currently selected disc, and the tower it was removed from
-time
-active
-event
-x
-y
+quit_game: bool: records whether the user has opted to quit the game
+active: bool: determines whether pygame should continue scanning for events
+event: Event: an event recorded by pygame, used for interactions with the game
+x: tuple: the range of x-coordinates of a target, used by button_clicked()
+y: tuple: the range of y-coordinates of a target, used by button_clicked()
 
-title
-subtitle
-ins_list
-length
-button_text
-text
-number_button
-num
-tower_block
-disc
-successful
-clock
-dropped_tower
+title: pygame.Surface: the title of the game displayed in some menus
+subtitle: pygame.Surface: the subtitle of the game displayed in some menus
+ins_list: list: an array of pygame.Surface objects used to generate the instructions
+button_text: pygame.Surface: the text found on buttons and discs in most of the game interface
+text:: pygame.Surface: the body text displayed in some menus
+number_button: pygame.Surface: the text of the buttons used to indicate the number of discs in a game
+num: int: indicates the number of discs to be used in the game
+tower_block: pygame.Surface: the rectangles representing towers in the main game interface
+disc: pygame.Surface: the rectangles representing discs in the main game interface
+successful: bool: declares if the user has successfully moved all discs to the last tower
+valid: int: contains the tower a held disc will be dropped onto, or None if the move is invalid in valid_placement()
+clock: Clock: used to maintain a steady framerate of 120 fps in the game
+time: int: temporarily holds the output of clock.tick(120), to prevent printing to command prompt
+dropped_tower: int: contains the tower a held disc will be dropped onto, or None if the move is invalid in game_mechanics()
 """
 
 # This function loads in the title and subtitle as needed.
@@ -58,20 +59,17 @@ def load_title(title_text, *subtitle_text):
         try:
             subtitle = subtitle_font.render(subtitle_text[0], True, (0,0,0))
             subtitle.convert_alpha()
-            screen.blit(subtitle, ((800 - subtitle_font.size(subtitle_text[0])[0]) / 2,10))
+            screen.blit(subtitle, ((400 - (subtitle_font.size(subtitle_text[0])[0])/2) ,10))
         except IndexError:
             pass
         # End try/except
     # End if title_text      
 # End load_title
 
-# This function warns the user if they are about to quit the game.
-def quit_warning():
-    pass
-
 # This function provides the instructions of the game to the user.
 # start: bool: Determines whether the game is starting to call next method
 def instructions(start):
+    global quit_game
     # Initialize the window depending on context
     screen.blit(background, (0,0))
     load_title(True, 'Instructions')
@@ -94,9 +92,8 @@ def instructions(start):
 
     for i in range(len(ins_list)):
         # Center text on display
-        length = ins_list[i].get_size()[0]
         ins_list[i] = ins_list[i].convert_alpha()
-        screen.blit(ins_list[i], ((800-length)/2, 200+(i*18)))
+        screen.blit(ins_list[i], ((800-ins_list[i].get_size()[0])/2, 200+(i*18)))
     # End for i
 
     # Generate button
@@ -112,8 +109,8 @@ def instructions(start):
     while active:
         for event in pygame.event.get():
             if event.type == pygame.QUIT: # Quit button
-                active = False # NOTE: remove when quit function is complete
-                quit_warning()
+                quit_game = True
+                active = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if button_clicked(event, (360,439), (493,552)):
                     active = False
@@ -150,7 +147,6 @@ def screen_update(mouse_clicked, *mouse_data):
     screen.blit(button_text, (713,31))
 
     # Generate the discs currently located on the towers
-    # NOTE: height of 25px with 10px gaps and width of 40+(10*num)px
     for i in range(3):
         for j in range(len(towers[i])):
             disc = pygame.Surface((40+(towers[i][j]*20),25))
@@ -182,69 +178,73 @@ def screen_update(mouse_clicked, *mouse_data):
 
 # This function sets up the game and lets the user choose how many discs to play with.
 def game_setup():
-    global towers
-    # Reset display and generate title/subtitle
-    screen.blit(background, (0,0))
-    load_title(True, 'How many discs?')
-    
-    # Generate instruction text
-    text = text_font.render('Select the number of discs you would like to play with.', True, (0,0,0))
-    text = text.convert_alpha()
-    screen.blit(text, (232,172))
-    
-    # Generate buttons for number selection with text
-    number_button = pygame.Surface((122,189))
-    number_button.fill((0,0,255))
-    
-    for i in range(4):
-        for j in range(2):
-            screen.blit(number_button, (134+(i*145), 200+(j*200)))
+    global towers, quit_game
+    if quit_game is False: # Skip if user opts to quit game
+        # Reset display and generate title/subtitle
+        screen.blit(background, (0,0))
+        load_title(True, 'How many discs?')
+        
+        # Generate instruction text
+        text = text_font.render('Select the number of discs you would like to play with.', True, (0,0,0))
+        text = text.convert_alpha()
+        screen.blit(text, (232,172))
+        
+        # Generate buttons for number selection with text
+        number_button = pygame.Surface((122,189))
+        number_button.fill((0,0,255))
+        
+        for i in range(4):
+            for j in range(2):
+                screen.blit(number_button, (134+(i*145), 200+(j*200)))
 
-            button_text = button_font.render(str(3+i+(j*4)), True, (255,255,255))
-            button_text = button_text.convert_alpha()
-            screen.blit(button_text, (195+(i*145)-(button_text.get_size()[0]/2),
-                                      285+(j*200))) # Centered on each button
-        # End for j
-    # End for i
-    
-    pygame.display.update()
+                button_text = button_font.render(str(3+i+(j*4)), True, (255,255,255))
+                button_text = button_text.convert_alpha()
+                screen.blit(button_text, (195+(i*145)-(button_text.get_size()[0]/2),
+                                        285+(j*200))) # Centered on each button
+            # End for j
+        # End for i
+        
+        pygame.display.update()
 
-    # Scan for number selection
-    active = True
-    while active:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT: # Quit button
-                active = False # NOTE: remove when quit function is complete
-                quit_warning()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                for i in range(4):
-                    if active is not True:
-                        break
-                    # End if active
-                    for j in range(2):
-                        if button_clicked(event, (134+(i*145),255+(i*145)),
-                                          (200+(j*200),388+(j*200))):
-                            num = 3 + i + (j*4) # Return the number selected
-                            active = False
-                        # End if button_clicked()
+        # Scan for number selection
+        active = True
+        while active:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: # Quit button
+                    quit_game = True
+                    active = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    for i in range(4):
+                        if active is not True:
+                            break
+                        # End if active
+                        for j in range(2):
+                            if button_clicked(event, (134+(i*145),255+(i*145)),
+                                            (200+(j*200),388+(j*200))):
+                                num = 3 + i + (j*4) # Return the number selected
+                                active = False
+                            # End if button_clicked()
+                        # End for i
                     # End for i
-                # End for i
-            # End if event.type
-        # End got event
-    # End while active
+                # End if event.type
+            # End got event
+        # End while active
 
-    # Initialize game and interface
-    towers[0] = [i for i in range(num, 0, -1)]
-    screen_update(False)
+        # Initialize game and interface
+        if quit_game is False:
+            towers[0] = [i for i in range(num, 0, -1)]
+            screen_update(False)
+        # End if quit_game
+    # End if quit_game
 # End game_setup
 
 # This function checks if the user has successfully moved all discs to the third tower
 # Returns a boolean of if the user has won
 def game_won():
     successful = True
-    if towers[0] == [] and towers[1] == []: # Left and center tower are empty
-        # Verify the stack is valid
-        for i in range(0, len(towers[2]-i)):
+    if towers[0] == [] and towers[1] == [] and selected[0] == None: # Left/center tower and mouse are empty
+        # Verify the discs are in the correct order
+        for i in range(0, len(towers[2])-1):
             if towers[2][i] - 1 == towers[2][i+1]:
                 continue
             else:
@@ -263,12 +263,34 @@ def game_won():
 # coord: tuple: the x and y location of the mouse
 # Returns tower the disc is placed on if valid, else None
 def valid_placement(coord):
-    return None # NOTE: needs lots of code
+    valid = None
+
+    # Check if disc can be placed on tower
+    for i in range(3):
+        # Check to see if the mouse is within 20 pixels of a tower
+        if coord[0] in range(100+(i*260), 179+(i*260)) and coord[1] in range(140, 599):
+            try:
+                if selected[0] < towers[i][-1]: # Disc is smaller than top disc on tower
+                    valid = i
+                    break
+                else:
+                    break
+                # End if selected[0]
+            except IndexError: # Tower is currently empty
+                valid = i
+                break
+            # End try/except
+        # End if coord[0]
+    # End for i
+
+    return valid
+# End valid_placement
 
 # This function scans input and interprets it into game actions.
 def game_mechanics():
-    global towers, selected, time
-    clock = pygame.time.Clock() # Used to count time and maintain framerate
+    global towers, selected, quit_game
+    time = 0.0
+    clock = pygame.time.Clock() # Used to maintain framerate
 
     # Begin scanning
     active = True
@@ -278,19 +300,23 @@ def game_mechanics():
                 active = False
                 break
             else:
-                time += clock.tick(120) / 1000.0 # Update at max 120 fps
+                time = clock.tick(120) # Update at max 120 fps
             # End if game_won()
 
             if event.type == pygame.QUIT: # Quit button
-                active = False # NOTE: remove when quit function is complete
-                quit_warning()
+                quit_game = True
+                active = False
             # End if event_type
             
             if selected[0] is None: # No disc currently selected
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if button_clicked(event, (710, 789), (10,69)): # Instructions button
                         instructions(False)
-                        screen_update(False)
+                        if quit_game is True: # Game was quit in instructions menu
+                            active = False
+                        else:
+                            screen_update(False)
+                        # End if quit_game
                     # End if button_clicked()
 
                     for i in range(3):
@@ -308,20 +334,23 @@ def game_mechanics():
                     # End for i
                 # End if event.type
             else:
-                if event.type == pygame.MOUSEBUTTONUP:
+                if event.type == pygame.MOUSEBUTTONUP: # Disc released
                     if event.button == 1:
-                        dropped_tower = valid_placement(event.pos)
+                        dropped_tower = valid_placement(event.pos) # Check if the disc can be placed on that tower
                         if dropped_tower is not None:
+                            # Valid placement, add to tower
                             towers[dropped_tower].append(selected[0])
                             selected = [None, None]
                             screen_update(False)
                         else:
+                            # Invalid placement, return to original tower
                             towers[selected[1]].append(selected[0])
                             selected = [None, None]
                             screen_update(False)
                         # End if dropped_tower
                     # End if event.button
                 elif event.type == pygame.MOUSEMOTION:
+                    # Update the held disc to follow the mouse
                     screen_update(True, event.pos)
                 # End if event.type
             # End if selected[0]
@@ -331,13 +360,13 @@ def game_mechanics():
 
 # This function informs the user that they have successfully completed the game.
 def endgame():
+    global quit_game
     # Load background and titles
     screen.blit(background, (0,0))
     load_title(True, 'You Won!')
 
     # Load text
-    text = text_font.render('Congratulations, you beat Tower of Hanoi in {:.1f} seconds!'.format(time),
-                            True, (0,0,0))
+    text = text_font.render('Congratulations, you beat Tower of Hanoi!', True, (0,0,0))
     text = text.convert_alpha()
     screen.blit(text, (400-(text.get_size()[0]/2), 300-(text.get_size()[1]/2)))
 
@@ -354,8 +383,8 @@ def endgame():
     while active:
         for event in pygame.event.get():
             if event.type == pygame.QUIT: # Quit button
-                active = False # NOTE: remove when quit function is complete
-                quit_warning()
+                quit_game = True
+                active = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if button_clicked(event, (360, 539), (500, 559)):
                     active = False
@@ -392,14 +421,20 @@ if __name__ == '__main__': # Program was started directly and not called by anot
     subtitle_font = pygame.font.SysFont('timesnewroman', 40, True, True)
     text_font = pygame.font.SysFont('timesnewroman', 15)
     button_font = pygame.font.SysFont('arial', 15, True)
-    # Tower array, selected disc, and timer
+    # Towers and selected disc arrays, quit game variable
     towers = [[], [], []]
     selected = [None, None]
-    time = 0.0
+    quit_game = False
 
     # Load instructions in game start mode
     instructions(True)
-    # Run main game
-    game_mechanics()
-    # End the game
-    endgame()
+    
+    if quit_game is False:
+        # Run main game
+        game_mechanics()
+
+        if quit_game is False:
+            # End the game
+            endgame()
+        # End if quit_game
+    # End if quit_game
